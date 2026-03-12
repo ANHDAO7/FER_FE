@@ -9,6 +9,11 @@ export default function Home() {
 
   useEffect(() => {
     async function testConnection() {
+      if (!supabase) {
+        setStatus('error');
+        console.error('Supabase client not initialized. Check your environment variables.');
+        return;
+      }
       try {
         const { data, error } = await supabase
           .from('connection_test')
