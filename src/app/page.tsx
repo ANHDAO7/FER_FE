@@ -1,6 +1,31 @@
-import Image from "next/image";
+'use client';
+
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [status, setStatus] = useState<'testing' | 'success' | 'error'>('testing');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    async function testConnection() {
+      try {
+        const { data, error } = await supabase
+          .from('connection_test')
+          .select('test_message')
+          .single();
+
+        if (error) throw error;
+        setStatus('success');
+        setMessage(data?.test_message || 'Connected!');
+      } catch (err) {
+        console.error('Connection error:', err);
+        setStatus('error');
+      }
+    }
+    testConnection();
+  }, []);
+
   return (
     <main style={{
       display: 'flex',
@@ -38,18 +63,39 @@ export default function Home() {
           <a href="#" style={{ opacity: 0.8 }}>Solutions</a>
           <a href="#" style={{ opacity: 0.8 }}>Pricing</a>
         </div>
-        <button className="glass" style={{
-          padding: '0.6rem 1.5rem',
-          borderRadius: '1.5rem',
-          background: 'var(--primary)',
-          color: 'white',
-          border: 'none',
-          fontWeight: 600,
-          cursor: 'pointer',
-          transition: 'all 0.3s ease'
-        }}>
-          Get Started
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="glass" style={{
+            padding: '0.4rem 1rem',
+            borderRadius: '1rem',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b',
+              boxShadow: `0 0 10px ${status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b'}`
+            }}></span>
+            Supabase: {status === 'testing' ? 'Testing...' : status === 'success' ? 'Connected' : 'Error'}
+          </div>
+          <button className="glass" style={{
+            padding: '0.6rem 1.5rem',
+            borderRadius: '1.5rem',
+            background: 'var(--primary)',
+            color: 'white',
+            border: 'none',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
+          }}>
+            Get Started
+          </button>
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -70,7 +116,7 @@ export default function Home() {
           marginBottom: '1rem',
           color: 'var(--primary)'
         }}>
-          ✨ Next.js 15 + Premium UI
+          ✨ {status === 'success' ? message : 'Next.js 15 + Premium UI'}
         </div>
 
         <h1 style={{
