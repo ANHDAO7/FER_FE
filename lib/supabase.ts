@@ -1,8 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseUrl = 'https://qsqhqoanvxfvjojrwvku.supabase.co';
+const supabaseKey = 'sb_publishable_AOqkSGycvNLOz3xNIBB1mw_MU4dSUXv';
 
-export const supabase = (supabaseUrl && supabaseAnonKey)
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : (null as any) // Trả về null nếu thiếu key để tránh crash khi build tĩnh
+export const supabase = createClient(supabaseUrl, supabaseKey);

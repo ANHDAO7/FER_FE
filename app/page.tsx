@@ -1,226 +1,186 @@
 'use client';
 
-import { supabase } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Clock, Sparkles, ChefHat } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+
+interface Recipe {
+  id: string;
+  title: string;
+  cooking_time: string;
+  dietary_label: string;
+  image_url: string;
+}
+
+const DIET_COLORS: Record<string, string> = {
+  Vegan: 'bg-emerald-500 hover:bg-emerald-600',
+  Vegetarian: 'bg-green-500 hover:bg-green-600',
+  Keto: 'bg-purple-500 hover:bg-purple-600',
+  Dessert: 'bg-pink-500 hover:bg-pink-600',
+  'Quick Meal': 'bg-blue-500 hover:bg-blue-600',
+  Paleo: 'bg-orange-500 hover:bg-orange-600',
+};
+
+function getDietClass(label: string) {
+  return DIET_COLORS[label] || 'bg-[#D4AF37] hover:bg-[#b5952f]';
+}
 
 export default function Home() {
-  const [status, setStatus] = useState<'testing' | 'success' | 'error'>('testing');
-  const [message, setMessage] = useState('');
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function testConnection() {
-      if (!supabase) {
-        setStatus('error');
-        console.error('Supabase client not initialized. Check your environment variables.');
-        return;
-      }
-      try {
-        const { data, error } = await supabase
-          .from('connection_test')
-          .select('test_message')
-          .single();
-
-        if (error) throw error;
-        setStatus('success');
-        setMessage(data?.test_message || 'Connected!');
-      } catch (err) {
-        console.error('Connection error:', err);
-        setStatus('error');
-      }
+    async function fetchRecipes() {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error && data) setRecipes(data);
+      setLoading(false);
     }
-    testConnection();
+    fetchRecipes();
   }, []);
 
   return (
-    <main style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      minHeight: '100vh',
-      position: 'relative',
-      padding: '2rem'
-    }}>
-      {/* Background Decorative Elements */}
-      <div className="hero-glow" style={{ top: '10%', left: '10%' }}></div>
-      <div className="hero-glow" style={{ bottom: '10%', right: '10%', background: 'var(--secondary-glow)' }}></div>
-
-      {/* Navbar */}
-      <nav className="glass" style={{
-        position: 'fixed',
-        top: '1.5rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'calc(100% - 3rem)',
-        maxWidth: '1200px',
-        height: '4.5rem',
-        borderRadius: '2.25rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 2rem',
-        zIndex: 100
-      }}>
-        <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.025em' }}>
-          FER<span className="gradient-text">FE</span>
-        </div>
-        <div style={{ display: 'flex', gap: '2rem', fontWeight: 500, fontSize: '0.9rem' }}>
-          <a href="#" style={{ opacity: 0.8 }}>Features</a>
-          <a href="#" style={{ opacity: 0.8 }}>Solutions</a>
-          <a href="#" style={{ opacity: 0.8 }}>Pricing</a>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div className="glass" style={{
-            padding: '0.4rem 1rem',
-            borderRadius: '1rem',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            color: status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            <span style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b',
-              boxShadow: `0 0 10px ${status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : '#f59e0b'}`
-            }}></span>
-            Supabase: {status === 'testing' ? 'Testing...' : status === 'success' ? 'Connected' : 'Error'}
+    <div>
+      {/* ─── Hero Section ─── */}
+      <section className="hero-pattern relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 max-w-7xl py-20 md:py-28 text-center relative">
+          {/* Pill badge */}
+          <div className="inline-flex items-center gap-2 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#8B6914] text-xs font-semibold rounded-full px-4 py-1.5 mb-6 animate-fade-up">
+            <Sparkles className="w-3.5 h-3.5" />
+            Community Recipe Platform
           </div>
-          <button className="glass" style={{
-            padding: '0.6rem 1.5rem',
-            borderRadius: '1.5rem',
-            background: 'var(--primary)',
-            color: 'white',
-            border: 'none',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 0.3s ease'
-          }}>
-            Get Started
-          </button>
-        </div>
-      </nav>
 
-      {/* Hero Section */}
-      <section style={{
-        marginTop: '10rem',
-        textAlign: 'center',
-        maxWidth: '900px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2rem'
-      }}>
-        <div className="glass" style={{
-          padding: '0.5rem 1rem',
-          borderRadius: '2rem',
-          fontSize: '0.8rem',
-          fontWeight: 600,
-          marginBottom: '1rem',
-          color: 'var(--primary)'
-        }}>
-          ✨ {status === 'success' ? message : 'Next.js 15 + Premium UI'}
-        </div>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-serif text-[#1A1A1A] leading-tight tracking-tight mb-6 animate-fade-up-delay-1">
+            Discover &amp; Share
+            <br />
+            <span className="gradient-gold">Amazing Recipes</span>
+          </h1>
 
-        <h1 style={{
-          fontSize: 'clamp(3rem, 8vw, 5rem)',
-          lineHeight: 1.1,
-          letterSpacing: '-0.05em',
-          fontWeight: 800,
-          margin: 0
-        }}>
-          Build the <span className="gradient-text">Future</span> of <br /> Web Development
-        </h1>
+          <p className="text-base md:text-lg text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed animate-fade-up-delay-2">
+            Explore a curated collection of culinary masterpieces. Upload your own
+            creations and inspire the community.
+          </p>
 
-        <p style={{
-          fontSize: '1.25rem',
-          lineHeight: 1.6,
-          opacity: 0.7,
-          maxWidth: '600px',
-          margin: '0 auto'
-        }}>
-          Create stunning, high-performance applications with our modern tech stack.
-          Seamlessly integrated, breathtakingly fast.
-        </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 animate-fade-up-delay-3">
+            <Link href="/login">
+              <button className="btn-gold px-8 py-3 rounded-2xl text-white font-semibold text-sm shadow-lg">
+                Start Cooking 🍳
+              </button>
+            </Link>
+            <a href="#recipes">
+              <button className="px-8 py-3 rounded-2xl text-sm font-semibold border-2 border-[#D4AF37]/40 text-[#8B6914] hover:bg-[#D4AF37]/5 transition-all">
+                Browse Recipes ↓
+              </button>
+            </a>
+          </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-          <button style={{
-            padding: '1rem 2.5rem',
-            borderRadius: '3rem',
-            background: 'white',
-            color: 'black',
-            fontWeight: 700,
-            fontSize: '1.1rem',
-            border: 'none',
-            boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
-            cursor: 'pointer'
-          }}>
-            Explore Now
-          </button>
-          <button className="glass" style={{
-            padding: '1rem 2.5rem',
-            borderRadius: '3rem',
-            fontWeight: 700,
-            fontSize: '1.1rem',
-            color: 'inherit',
-            cursor: 'pointer'
-          }}>
-            Live Demo
-          </button>
+          {/* Floating stats */}
+          <div className="flex flex-wrap justify-center gap-6 mt-14 animate-fade-up-delay-3">
+            {[
+              { icon: '🍽️', label: `${loading ? '...' : recipes.length} Recipes` },
+              { icon: '👨‍🍳', label: 'Community Chefs' },
+              { icon: '⭐', label: 'Curated Quality' },
+            ].map((s) => (
+              <div key={s.label} className="glass-card px-5 py-3 rounded-2xl flex items-center gap-2.5 animate-float">
+                <span className="text-xl">{s.icon}</span>
+                <span className="text-sm font-semibold text-gray-700">{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Floating Card Example */}
-      <div className="animate-float" style={{
-        marginTop: '6rem',
-        maxWidth: '1000px',
-        width: '100%'
-      }}>
-        <div className="glass" style={{
-          borderRadius: '2rem',
-          padding: '3rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '2rem'
-        }}>
-          {[1, 2, 3].map((i) => (
-            <div key={i} style={{
-              padding: '2rem',
-              borderRadius: '1.5rem',
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid var(--glass-border)'
-            }}>
-              <div style={{
-                width: '3rem',
-                height: '3rem',
-                borderRadius: '1rem',
-                background: 'var(--primary)',
-                marginBottom: '1.5rem'
-              }}></div>
-              <h3 style={{ marginBottom: '1rem' }}>Feature {i}</h3>
-              <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Sed do eiusmod tempor incididunt ut labore.
-              </p>
-            </div>
-          ))}
+      {/* ─── Recipe Grid using Shadcn UI Card & Badge ─── */}
+      <section id="recipes" className="container mx-auto px-6 max-w-7xl py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold font-serif text-[#1A1A1A] mb-2">
+            Latest Recipes
+          </h2>
+          <div className="section-divider" />
         </div>
-      </div>
 
-      {/* Footer */}
-      <footer style={{
-        marginTop: '8rem',
-        padding: '4rem 0',
-        width: '100%',
-        borderTop: '1px solid var(--glass-border)',
-        textAlign: 'center',
-        opacity: 0.5,
-        fontSize: '0.9rem'
-      }}>
-        © 2026 FER-FE. Built with Passion & Antigravity.
-      </footer>
-    </main>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-gray-100">
+                <div className="skeleton h-48 w-full" />
+                <div className="p-4 space-y-3">
+                  <div className="skeleton h-5 w-2/3" />
+                  <div className="skeleton h-4 w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : recipes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <div className="w-20 h-20 rounded-full btn-gold flex items-center justify-center shadow-lg animate-float">
+              <ChefHat className="w-10 h-10 text-white" />
+            </div>
+            <p className="text-lg font-semibold text-gray-700">No recipes yet!</p>
+            <p className="text-sm text-gray-400">Be the first to share a delicious recipe.</p>
+            <Link href="/login">
+              <button className="btn-gold px-6 py-2.5 rounded-xl text-white text-sm font-semibold mt-2">
+                Add Your Recipe →
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recipes.map((recipe, i) => (
+              /* ── Shadcn UI <Card> ── */
+              <Card
+                key={recipe.id}
+                className="recipe-card border-none shadow-sm animate-fade-up overflow-hidden"
+                style={{ animationDelay: `${i * 0.07}s` }}
+              >
+                {/* Food thumbnail */}
+                <div className="relative w-full h-52 overflow-hidden bg-gray-100">
+                  <Image
+                    src={recipe.image_url || 'https://placehold.co/600x400/F5F3EE/D4AF37?text=No+Image'}
+                    alt={recipe.title}
+                    fill
+                    className="object-cover transition-transform duration-700 hover:scale-105"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+                  {/* ── Shadcn UI <Badge> for dietary label ── */}
+                  {recipe.dietary_label && (
+                    <Badge
+                      className={`absolute top-3 right-3 text-white border-none text-xs font-semibold ${getDietClass(recipe.dietary_label)}`}
+                    >
+                      {recipe.dietary_label}
+                    </Badge>
+                  )}
+                </div>
+
+                <CardHeader className="pb-1 pt-4 px-4">
+                  <CardTitle className="font-serif text-lg text-[#1A1A1A] truncate">
+                    {recipe.title}
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="px-4 pb-4">
+                  {/* ── Shadcn UI <Badge> for cooking time ── */}
+                  <Badge
+                    variant="secondary"
+                    className="bg-[#D4AF37]/10 text-[#8B6914] border border-[#D4AF37]/25 hover:bg-[#D4AF37]/20 gap-1"
+                  >
+                    <Clock className="w-3 h-3" />
+                    {recipe.cooking_time}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

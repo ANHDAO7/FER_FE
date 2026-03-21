@@ -1,33 +1,35 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import './globals.css';
+import { AuthProvider } from '@/components/providers/AuthProvider';
+import Header from '@/components/providers/Header';
 
 export const metadata: Metadata = {
-  title: "FER-FE | Premium Next.js App",
-  description: "A state-of-the-art web application built with Next.js and Antigravity.",
+  title: 'CulinaryArt - Recipe Management',
+  description: 'A platform to share and manage your favorite recipes',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen antialiased">
+        <AuthProvider>
+          <Header />
+          <main className="min-h-[calc(100vh-65px)]">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );
